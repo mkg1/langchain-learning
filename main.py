@@ -8,7 +8,7 @@ from langchain.memory import FileChatMessageHistory, ConversationSummaryMemory
 load_dotenv()
 
 # create instance of chat model
-chat = ChatOpenAI(verbose=True)  #allows you to see the chat summary
+chat = ChatOpenAI()  
 
 # ConversationBufferMemory - useful with conversational models; allows previous messages to be sent along with current message to model.
 # FileChatMessageHistory - allows you to save messages to a file as json for later use
