@@ -2,20 +2,23 @@ from langchain.chat_models import ChatOpenAI
 from langchain.prompts import HumanMessagePromptTemplate, ChatPromptTemplate, MessagesPlaceholder
 from langchain.chains import LLMChain
 from dotenv import load_dotenv
-from langchain.memory import ConversationBufferMemory, FileChatMessageHistory
+from langchain.memory import FileChatMessageHistory, ConversationSummaryMemory
 
 # load env vars
 load_dotenv()
 
 # create instance of chat model
-chat = ChatOpenAI()
+chat = ChatOpenAI(verbose=True)  #allows you to see the chat summary
 
 # ConversationBufferMemory - useful with conversational models; allows previous messages to be sent along with current message to model.
 # FileChatMessageHistory - allows you to save messages to a file as json for later use
-memory = ConversationBufferMemory(
-    chat_memory=FileChatMessageHistory("messages.json"),
+# ConversationSummaryMemory - uses it's own LLM to summarize the chat to avoid huge chats stacking up (but doesn't play well with FileChatMessageHistory)
+# Adds some performance overhead bc every sent message results in a second step of summarizing the chat.
+memory = ConversationSummaryMemory(
+    # chat_memory=FileChatMessageHistory("messages.json"),
     memory_key="messages", 
-    return_messages=True
+    return_messages=True,
+    llm=chat,
     )
 
 prompt = ChatPromptTemplate(
