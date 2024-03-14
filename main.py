@@ -1,52 +1,29 @@
-from langchain.llms import OpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain, SequentialChain
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import HumanMessagePromptTemplate, ChatPromptTemplate
+from langchain.chains import LLMChain
 from dotenv import load_dotenv
-import argparse
 
+# load env vars
 load_dotenv()
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--task", default="Return a list of numbers")
-parser.add_argument("--language", default="python")
-args=parser.parse_args()
+# create instance of chat model
+chat = ChatOpenAI()
 
-llm = OpenAI()
-
-code_prompt = PromptTemplate(
-    template="Write a very short {language} function that will {task}",
-    input_variables=["language", "task"]
+prompt = ChatPromptTemplate(
+    input_variables=["content"],
+    messages=[
+        HumanMessagePromptTemplate.from_template("{content}")
+    ]
 )
 
-test_prompt = PromptTemplate(
-    input_variables=["language", "code"],
-    template="Write a test for the following {language} code: \n{code}"
+chain = LLMChain(
+    llm=chat,
+    prompt=prompt
 )
 
-code_chain = LLMChain(
-    llm=llm,
-    prompt=code_prompt,
-    output_key="code"
-)
+while True:
+    # built in fn - will pause execution and wait for user input + user hits Enter
+    content = input(">> ")
 
-test_chain = LLMChain(
-    llm=llm,
-    prompt=test_prompt,
-    output_key="test"
-)
-
-chain = SequentialChain(
-    chains=[code_chain, test_chain], 
-    input_variables=["task", "language"],
-    output_variables=["test", "code"]
-)
-
-result = chain({
-    "language": args.language,
-    "task": args.task
-})
-
-print(">>>>>>>Generated Code: ")
-print(result["code"])
-print(">>>>>>>>Generated Test: ")
-print(result["test"])
+    result = chain({"content": content})
+    print(result["text"])
